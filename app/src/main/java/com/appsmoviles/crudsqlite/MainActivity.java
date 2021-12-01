@@ -165,20 +165,22 @@ public class MainActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, intent);
         IntentResult scanningResult = IntentIntegrator.parseActivityResult(requestCode, resultCode, intent);
         if (scanningResult != null) {
-            //Quiere decir que se obtuvo resultado pro lo tanto:
-            //Desplegamos en pantalla el contenido del código de barra scaneado
-            String scanContent = scanningResult.getContents();
-            Toast.makeText(getApplicationContext(),
-                    scanContent, Toast.LENGTH_SHORT).show();
+            //Quiere decir que se obtuvo resultado por lo tanto:
+            //Extrae contenido del codigo
+            String id = scanningResult.getContents();
+            if (!consultaIndividual(id)) { //Consultar por id escaneado
+                Toast.makeText(getApplicationContext(), "Caballero inexistente", Toast.LENGTH_SHORT).show();
+            } else { //Si existe caballero
+                //Habilitar botones
+                btnActualizar.setEnabled(true);
+                btnEliminar.setEnabled(true);
+            }
             //Desplegamos en pantalla el nombre del formato del código de barra scaneado
-            String scanFormat = scanningResult.getFormatName();
-            Toast.makeText(getApplicationContext(),
-                    "Formato: " + scanFormat, Toast.LENGTH_SHORT).show();
+            //String scanFormat = scanningResult.getFormatName();
+            //Toast.makeText(getApplicationContext(),"Formato: " + scanFormat, Toast.LENGTH_SHORT).show();
         } else {
             //Quiere decir que NO se obtuvo resultado
-            Toast toast = Toast.makeText(getApplicationContext(),
-                    "No se ha recibido datos del scaneo!", Toast.LENGTH_SHORT);
-            toast.show();
+            Toast.makeText(getApplicationContext(),"No se ha recibido datos del scaneo!", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -218,6 +220,7 @@ public class MainActivity extends AppCompatActivity {
         if(cursor.getCount() > 0) {
             while(cursor.moveToNext()) {
                 //Asignar datos encontrados a la UI
+                etId.setText(cursor.getString(0));
                 etNombre.setText(cursor.getString(1));
                 etLugarNacimiento.setText(cursor.getString(2));
             }
