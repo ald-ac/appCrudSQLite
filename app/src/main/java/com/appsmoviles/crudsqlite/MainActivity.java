@@ -114,6 +114,28 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+
+        //Accion eliminar
+        btnEliminar.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                String id = etId.getText().toString();
+                if(!id.equals("")) {
+                    try {
+                        eliminarCaballero(id);
+                    }catch (SQLiteConstraintException se) {
+                        Toast.makeText(getApplicationContext(), "Error durante eliminacion", Toast.LENGTH_LONG).show();
+                    }
+                    Toast.makeText(getApplicationContext(), "Eliminacion hecha", Toast.LENGTH_LONG).show();
+                    limpiarCampos();
+                    //Desactivar botones despues de eliminar
+                    btnActualizar.setEnabled(false);
+                    btnEliminar.setEnabled(false);
+                } else {
+                    Toast.makeText(getApplicationContext(), "Campo Id obligatorio", Toast.LENGTH_LONG).show();
+                }
+            }
+        });
     }
 
     //LIMPIAR EDITTEXT
@@ -167,12 +189,24 @@ public class MainActivity extends AppCompatActivity {
 
         SQLiteDatabase db = con.getWritableDatabase();
 
-        String actualizarPaciente = "UPDATE " + Utilidades.TABLA_CABALLEROS
+        String actualizarCaballero = "UPDATE " + Utilidades.TABLA_CABALLEROS
                 + " SET " + Utilidades.CAMPO_NOMBRE + "='" + nombre + "'"
                 + ", " + Utilidades.CAMPO_LUGAR + "='" + lugar + "'"
                 + " WHERE " + Utilidades.CAMPO_ID + "= '" + id + "'";
-        db.execSQL(actualizarPaciente);
+        db.execSQL(actualizarCaballero);
         db.close();
     }
 
+    //METODO ELIMINAR CABALLERO
+    public void eliminarCaballero(String id) {
+        ConexionSQLiteHelper con = new ConexionSQLiteHelper(getApplicationContext(), "bd_caballeros", null, 1);
+
+        SQLiteDatabase db = con.getWritableDatabase();
+
+        String eliminarCaballero = "DELETE FROM " + Utilidades.TABLA_CABALLEROS
+                + " WHERE " + Utilidades.CAMPO_ID
+                + "= '" + id+"'";
+        db.execSQL(eliminarCaballero);
+        db.close();
+    }
 }
