@@ -31,6 +31,9 @@ public class MainActivity extends AppCompatActivity {
         btnConsultar = findViewById(R.id.btn_consulta);
         btnActualizar = findViewById(R.id.btn_actualizar);
         btnEliminar = findViewById(R.id.btnBorrar);
+        //Desactivar botones
+        btnActualizar.setEnabled(false);
+        btnEliminar.setEnabled(false);
 
         etId = findViewById(R.id.et_id);
         etNombre = findViewById(R.id.et_nombre);
@@ -52,6 +55,8 @@ public class MainActivity extends AppCompatActivity {
                     }catch (SQLiteConstraintException se) {
                         Toast.makeText(getApplicationContext(), "Error en base de datos: Posible llave duplicada", Toast.LENGTH_LONG).show();
                     }
+                    Toast.makeText(getApplicationContext(), "Insercion hecha", Toast.LENGTH_LONG).show();
+                    limpiarCampos();
                 } else {
                     Toast.makeText(getApplicationContext(), "Todos los campos deben ser llenados", Toast.LENGTH_LONG).show();
                 }
@@ -66,6 +71,10 @@ public class MainActivity extends AppCompatActivity {
                 if(!id.equals("")) {
                     if(!consultaIndividual(id)) {
                         Toast.makeText(getApplicationContext(), "Caballero inexistente", Toast.LENGTH_SHORT).show();
+                    } else { //Si existe caballero
+                        //Habilitar botones
+                        btnActualizar.setEnabled(true);
+                        btnEliminar.setEnabled(true);
                     }
                 } else {
                     Toast.makeText(getApplicationContext(), "Campo Id obligatorio", Toast.LENGTH_LONG).show();
@@ -81,6 +90,37 @@ public class MainActivity extends AppCompatActivity {
                 return false;
             }
         });
+
+        //Accion actualizar
+        btnActualizar.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                String id = etId.getText().toString();
+                String nombre = etNombre.getText().toString();
+                String lugar = etLugarNacimiento.getText().toString();
+                if(!id.equals("") && !nombre.equals("") && !lugar.equals("")) {
+                    try {
+                        actualizarCaballero(id, nombre, lugar);
+                    }catch (SQLiteConstraintException se) {
+                        Toast.makeText(getApplicationContext(), "Error durante actualizacion", Toast.LENGTH_LONG).show();
+                    }
+                    Toast.makeText(getApplicationContext(), "Actualizacion hecha", Toast.LENGTH_LONG).show();
+                    limpiarCampos();
+                    //Desactivar botones despues de actualizar
+                    btnActualizar.setEnabled(false);
+                    btnEliminar.setEnabled(false);
+                } else {
+                    Toast.makeText(getApplicationContext(), "Todos los campos deben ser llenados", Toast.LENGTH_LONG).show();
+                }
+            }
+        });
+    }
+
+    //LIMPIAR EDITTEXT
+    public void limpiarCampos() {
+        etNombre.setText("");
+        etId.setText("");
+        etLugarNacimiento.setText("");
     }
 
     //ACCIONES SQL
@@ -120,4 +160,19 @@ public class MainActivity extends AppCompatActivity {
             return false;
         }
     }
+
+    //METODO ACTUALIZAR CABALLERO
+    public void actualizarCaballero(String id, String nombre, String lugar) {
+        ConexionSQLiteHelper con = new ConexionSQLiteHelper(getApplicationContext(), "bd_caballeros", null, 1);
+
+        SQLiteDatabase db = con.getWritableDatabase();
+
+        String actualizarPaciente = "UPDATE " + Utilidades.TABLA_CABALLEROS
+                + " SET " + Utilidades.CAMPO_NOMBRE + "='" + nombre + "'"
+                + ", " + Utilidades.CAMPO_LUGAR + "='" + lugar + "'"
+                + " WHERE " + Utilidades.CAMPO_ID + "= '" + id + "'";
+        db.execSQL(actualizarPaciente);
+        db.close();
+    }
+
 }
