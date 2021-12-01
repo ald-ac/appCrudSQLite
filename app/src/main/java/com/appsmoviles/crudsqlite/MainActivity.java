@@ -16,6 +16,8 @@ import android.widget.Toast;
 import com.appsmoviles.crudsqlite.objetos.Caballero;
 import com.appsmoviles.crudsqlite.sql.ConexionSQLiteHelper;
 import com.appsmoviles.crudsqlite.sql.Utilidades;
+import com.google.zxing.integration.android.IntentIntegrator;
+import com.google.zxing.integration.android.IntentResult;
 
 public class MainActivity extends AppCompatActivity {
     Button btnInsertar, btnConsultar, btnActualizar, btnEliminar;
@@ -49,10 +51,10 @@ public class MainActivity extends AppCompatActivity {
                 String id = etId.getText().toString();
                 String nombre = etNombre.getText().toString();
                 String lugar = etLugarNacimiento.getText().toString();
-                if(!id.equals("") && !nombre.equals("") && !lugar.equals("")) {
+                if (!id.equals("") && !nombre.equals("") && !lugar.equals("")) {
                     try {
                         agregarCaballero(id, nombre, lugar);
-                    }catch (SQLiteConstraintException se) {
+                    } catch (SQLiteConstraintException se) {
                         Toast.makeText(getApplicationContext(), "Error en base de datos: Posible llave duplicada", Toast.LENGTH_LONG).show();
                     }
                     Toast.makeText(getApplicationContext(), "Insercion hecha", Toast.LENGTH_LONG).show();
@@ -68,8 +70,8 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 String id = etId.getText().toString();
-                if(!id.equals("")) {
-                    if(!consultaIndividual(id)) {
+                if (!id.equals("")) {
+                    if (!consultaIndividual(id)) {
                         Toast.makeText(getApplicationContext(), "Caballero inexistente", Toast.LENGTH_SHORT).show();
                     } else { //Si existe caballero
                         //Habilitar botones
@@ -98,10 +100,10 @@ public class MainActivity extends AppCompatActivity {
                 String id = etId.getText().toString();
                 String nombre = etNombre.getText().toString();
                 String lugar = etLugarNacimiento.getText().toString();
-                if(!id.equals("") && !nombre.equals("") && !lugar.equals("")) {
+                if (!id.equals("") && !nombre.equals("") && !lugar.equals("")) {
                     try {
                         actualizarCaballero(id, nombre, lugar);
-                    }catch (SQLiteConstraintException se) {
+                    } catch (SQLiteConstraintException se) {
                         Toast.makeText(getApplicationContext(), "Error durante actualizacion", Toast.LENGTH_LONG).show();
                     }
                     Toast.makeText(getApplicationContext(), "Actualizacion hecha", Toast.LENGTH_LONG).show();
@@ -120,10 +122,10 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 String id = etId.getText().toString();
-                if(!id.equals("")) {
+                if (!id.equals("")) {
                     try {
                         eliminarCaballero(id);
-                    }catch (SQLiteConstraintException se) {
+                    } catch (SQLiteConstraintException se) {
                         Toast.makeText(getApplicationContext(), "Error durante eliminacion", Toast.LENGTH_LONG).show();
                     }
                     Toast.makeText(getApplicationContext(), "Eliminacion hecha", Toast.LENGTH_LONG).show();
@@ -144,6 +146,40 @@ public class MainActivity extends AppCompatActivity {
                 limpiarCampos();
             }
         });
+
+        //Accion escanear Id para consulta
+        ivCamara.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                //Se instancia un objeto de la clase IntentIntegrator
+                IntentIntegrator scanIntegrator = new IntentIntegrator(MainActivity.this);
+                //Se procede con el proceso de scaneo
+                scanIntegrator.initiateScan();
+            }
+        });
+    }
+
+    //Resultado de Escaneo
+    public void onActivityResult(int requestCode, int resultCode, Intent intent) {
+        //Se obtiene el resultado del proceso de scaneo y se parsea
+        super.onActivityResult(requestCode, resultCode, intent);
+        IntentResult scanningResult = IntentIntegrator.parseActivityResult(requestCode, resultCode, intent);
+        if (scanningResult != null) {
+            //Quiere decir que se obtuvo resultado pro lo tanto:
+            //Desplegamos en pantalla el contenido del código de barra scaneado
+            String scanContent = scanningResult.getContents();
+            Toast.makeText(getApplicationContext(),
+                    scanContent, Toast.LENGTH_SHORT).show();
+            //Desplegamos en pantalla el nombre del formato del código de barra scaneado
+            String scanFormat = scanningResult.getFormatName();
+            Toast.makeText(getApplicationContext(),
+                    "Formato: " + scanFormat, Toast.LENGTH_SHORT).show();
+        } else {
+            //Quiere decir que NO se obtuvo resultado
+            Toast toast = Toast.makeText(getApplicationContext(),
+                    "No se ha recibido datos del scaneo!", Toast.LENGTH_SHORT);
+            toast.show();
+        }
     }
 
     //LIMPIAR EDITTEXT
